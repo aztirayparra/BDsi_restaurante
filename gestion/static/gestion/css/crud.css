@@ -1,0 +1,38 @@
+.form-wrapper {
+    max-width: 550px;
+    margin: 0 auto;
+}
+
+.form-group { margin-bottom: 1.1rem; }
+.form-group label { display: block; font-size: 0.88rem; font-weight: bold; color: #444; margin-bottom: 4px; }
+.form-group input,
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.93rem;
+    font-family: inherit;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus { outline: none; border-color: #8B0000; }
+.form-group textarea { resize: vertical; min-height: 80px; }
+
+.form-actions { display: flex; gap: 1rem; margin-top: 1.5rem; }
+
+.confirm-box {
+    max-width: 420px;
+    margin: 2rem auto;
+    text-align: center;
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+.confirm-box h3 { color: #dc3545; margin-bottom: 1rem; }
+.confirm-box p  { color: #555; margin-bottom: 1.5rem; }
+.confirm-actions { display: flex; gap: 1rem; justify-content: center; }
+
+.acciones { display: flex; gap: 6px; }

@@ -1,0 +1,28 @@
+{% extends 'gestion/base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'gestion/css/crud.css' %}">{% endblock %}
+
+{% block content %}
+<h2 class="page-title">{{ titulo }}</h2>
+<div class="form-wrapper">
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Nombre *</label>
+            <input type="text" name="nombre" value="{{ obj.nombre|default:'' }}" required>
+        </div>
+        <div class="form-group">
+            <label>Teléfono</label>
+            <input type="text" name="telefono" value="{{ obj.telefono|default:'' }}">
+        </div>
+        <div class="form-group">
+            <label>Correo</label>
+            <input type="email" name="correo" value="{{ obj.correo|default:'' }}">
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">💾 Guardar</button>
+            <a href="{% url 'lista_clientes' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

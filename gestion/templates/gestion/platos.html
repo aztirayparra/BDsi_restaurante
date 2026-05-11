@@ -1,25 +1,42 @@
 {% extends 'gestion/base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'gestion/css/crud.css' %}">{% endblock %}
 
 {% block content %}
-<h2>Platos</h2>
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2 class="page-title">Platos</h2>
+    <a href="{% url 'crear_plato' %}" class="btn btn-primary">➕ Nuevo plato</a>
+</div>
+
 <table>
-    <tr>
-        <th>ID</th>
-        <th>Nombre</th>
-        <th>Descripción</th>
-        <th>Precio</th>
-        <th>Categoría</th>
-        <th>Disponible</th>
-    </tr>
-    {% for plato in platos %}
-    <tr>
-        <td>{{ plato.id }}</td>
-        <td>{{ plato.nombre_plato }}</td>
-        <td>{{ plato.descripcion }}</td>
-        <td>{{ plato.precio }}</td>
-        <td>{{ plato.categoria }}</td>
-        <td>{{ plato.disponible }}</td>
-    </tr>
-    {% endfor %}
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Categoría</th>
+            <th>Precio</th>
+            <th>Disponible</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for plato in platos %}
+        <tr>
+            <td>{{ plato.id }}</td>
+            <td>{{ plato.nombre_plato }}</td>
+            <td>{{ plato.categoria|default:"—" }}</td>
+            <td>${{ plato.precio }}</td>
+            <td>{% if plato.disponible %}✅{% else %}❌{% endif %}</td>
+            <td>
+                <div class="acciones">
+                    <a href="{% url 'editar_plato' plato.pk %}" class="btn btn-secondary btn-sm">✏️ Editar</a>
+                    <a href="{% url 'eliminar_plato' plato.pk %}" class="btn btn-danger btn-sm">🗑️ Eliminar</a>
+                </div>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align:center;color:#888;">No hay platos registrados.</td></tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% endblock %}

@@ -1,0 +1,122 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --rojo: #8B0000;
+    --rojo-claro: #b22222;
+    --dorado: #D4AF37;
+    --fondo: #f4f4f4;
+    --blanco: #ffffff;
+    --sombra: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+body { font-family: Arial, sans-serif; background: var(--fondo); }
+
+header {
+    background: var(--rojo);
+    color: white;
+    padding: 18px;
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+nav {
+    background: var(--rojo-claro);
+    padding: 10px;
+    text-align: center;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 5px;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    padding: 6px 14px;
+    border-radius: 4px;
+    transition: background 0.2s;
+    font-size: 0.9rem;
+}
+
+nav a:hover { background: rgba(255,255,255,0.2); }
+
+nav a.logout {
+    background: rgba(0,0,0,0.3);
+    margin-left: 20px;
+}
+
+.contenedor {
+    width: 92%;
+    max-width: 1100px;
+    margin: 25px auto;
+    background: white;
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: var(--sombra);
+}
+
+.page-title {
+    font-size: 1.4rem;
+    color: var(--rojo);
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--rojo);
+    padding-bottom: 8px;
+}
+
+/* Mensajes */
+.messages { list-style: none; padding: 10px 5%; }
+.message { padding: 10px 15px; border-radius: 6px; margin-bottom: 6px; font-size: 0.9rem; }
+.message.success { background: #d4edda; color: #155724; }
+.message.error   { background: #f8d7da; color: #721c24; }
+
+/* Tabla */
+table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+th, td { padding: 11px 14px; text-align: left; border-bottom: 1px solid #eee; }
+th { background: var(--rojo); color: white; font-size: 0.9rem; }
+tr:hover { background: #fff5f5; }
+
+/* Botones */
+.btn {
+    display: inline-block;
+    padding: 6px 14px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    text-decoration: none;
+    transition: opacity 0.2s;
+}
+.btn:hover { opacity: 0.85; }
+.btn-primary   { background: var(--rojo); color: white; }
+.btn-secondary { background: var(--dorado); color: #1a1a1a; }
+.btn-danger    { background: #dc3545; color: white; }
+.btn-sm        { padding: 4px 10px; font-size: 0.8rem; }
+
+/* Cards del dashboard */
+.cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+}
+.card {
+    background: #fff;
+    border-top: 4px solid var(--rojo);
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: var(--sombra);
+}
+.card h3 { color: var(--rojo); font-size: 0.95rem; margin-bottom: 8px; }
+.card p  { font-size: 2rem; font-weight: bold; color: #333; }
+
+footer {
+    text-align: center;
+    padding: 15px;
+    color: #888;
+    font-size: 0.82rem;
+    margin-top: 2rem;
+}

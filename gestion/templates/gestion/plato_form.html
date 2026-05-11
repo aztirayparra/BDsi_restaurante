@@ -1,0 +1,38 @@
+{% extends 'gestion/base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'gestion/css/crud.css' %}">{% endblock %}
+
+{% block content %}
+<h2 class="page-title">{{ titulo }}</h2>
+<div class="form-wrapper">
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Nombre del plato *</label>
+            <input type="text" name="nombre_plato" value="{{ obj.nombre_plato|default:'' }}" required>
+        </div>
+        <div class="form-group">
+            <label>Descripción</label>
+            <textarea name="descripcion">{{ obj.descripcion|default:'' }}</textarea>
+        </div>
+        <div class="form-group">
+            <label>Precio *</label>
+            <input type="number" name="precio" step="0.01" min="0" value="{{ obj.precio|default:'' }}" required>
+        </div>
+        <div class="form-group">
+            <label>Categoría</label>
+            <input type="text" name="categoria" value="{{ obj.categoria|default:'' }}">
+        </div>
+        <div class="form-group">
+            <label>
+                <input type="checkbox" name="disponible" {% if obj.disponible %}checked{% endif %}>
+                ¿Disponible?
+            </label>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">💾 Guardar</button>
+            <a href="{% url 'lista_platos' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

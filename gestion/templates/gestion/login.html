@@ -1,0 +1,49 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Iniciar sesión - Pasta La Vista</title>
+    <link rel="stylesheet" href="{% static 'gestion/css/base.css' %}">
+    <link rel="stylesheet" href="{% static 'gestion/css/auth.css' %}">
+</head>
+<body>
+
+{% if messages %}
+<ul class="messages">
+    {% for message in messages %}
+    <li class="message {{ message.tags }}">{{ message }}</li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<div class="auth-wrapper">
+    <div class="auth-box">
+        <div class="auth-header">
+            <h1>🍽️ Pasta La Vista</h1>
+            <p>Panel de administración</p>
+        </div>
+        <div class="auth-body">
+            <h2>Iniciar sesión</h2>
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="form-group">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% for error in field.errors %}
+                    <span class="form-error">{{ error }}</span>
+                    {% endfor %}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+            </form>
+            <div class="auth-link">
+                ¿No tienes cuenta? <a href="{% url 'registro' %}">Regístrate aquí</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
