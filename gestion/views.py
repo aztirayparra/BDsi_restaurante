@@ -58,7 +58,17 @@ def inicio(request):
 # ── LISTAS ────────────────────────────────────
 @login_required
 def lista_clientes(request):
-    return render(request, 'gestion/clientes.html', {'clientes': Cliente.objects.all()})
+    query = request.GET.get('q', '')
+    clientes = Cliente.objects.all()
+    if query:
+        clientes = clientes.filter(
+            nombre__icontains=query
+        ) | clientes.filter(
+            telefono__icontains=query
+        ) | clientes.filter(
+            correo__icontains=query
+        )
+    return render(request, 'gestion/clientes.html', {'clientes': clientes, 'query': query})
 
 @login_required
 def lista_empleados(request):
@@ -70,7 +80,15 @@ def lista_mesas(request):
 
 @login_required
 def lista_platos(request):
-    return render(request, 'gestion/platos.html', {'platos': Plato.objects.all()})
+    query = request.GET.get('q', '')
+    platos = Plato.objects.all()
+    if query:
+        platos = platos.filter(
+            nombre_plato__icontains=query
+        ) | platos.filter(
+            categoria__icontains=query
+        )
+    return render(request, 'gestion/platos.html', {'platos': platos, 'query': query})
 
 @login_required
 def lista_ordenes(request):
@@ -115,6 +133,10 @@ def eliminar_cliente(request, pk):
         return redirect('lista_clientes')
     return render(request, 'gestion/confirmar_eliminar.html', {'obj': cliente, 'nombre': cliente.nombre, 'volver': 'lista_clientes'})
 
+@login_required
+def detalle_cliente(request, pk):
+    cliente = get_object_or_404(Cliente, pk=pk)
+    return render(request, 'gestion/cliente_detalle.html', {'cliente': cliente})
 
 # ── CRUD PLATOS ───────────────────────────────
 @login_required
@@ -153,3 +175,7 @@ def eliminar_plato(request, pk):
         messages.success(request, 'Plato eliminado.')
         return redirect('lista_platos')
     return render(request, 'gestion/confirmar_eliminar.html', {'obj': plato, 'nombre': plato.nombre_plato, 'volver': 'lista_platos'})
+@login_required
+def detalle_plato(request, pk):
+    plato = get_object_or_404(Plato, pk=pk)
+    return render(request, 'gestion/plato_detalle.html', {'plato': plato})

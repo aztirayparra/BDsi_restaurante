@@ -7,7 +7,14 @@
     <h2 class="page-title">Platos</h2>
     <a href="{% url 'crear_plato' %}" class="btn btn-primary">➕ Nuevo plato</a>
 </div>
-
+<form method="get" style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+    <input type="text" name="q" value="{{ query }}" placeholder="Buscar por nombre o categoría..."
+        style="padding:7px 12px; border:1px solid #ddd; border-radius:5px; flex:1; font-size:0.9rem;">
+    <button type="submit" class="btn btn-primary">🔍 Buscar</button>
+    {% if query %}
+    <a href="{% url 'lista_platos' %}" class="btn btn-secondary">✖ Limpiar</a>
+    {% endif %}
+</form>
 <table>
     <thead>
         <tr>
@@ -31,6 +38,7 @@
                 <div class="acciones">
                     <a href="{% url 'editar_plato' plato.pk %}" class="btn btn-secondary btn-sm">✏️ Editar</a>
                     <a href="{% url 'eliminar_plato' plato.pk %}" class="btn btn-danger btn-sm">🗑️ Eliminar</a>
+                    <a href="{% url 'detalle_plato' plato.pk %}" class="btn btn-primary btn-sm">👁️ Ver</a>
                 </div>
             </td>
         </tr>

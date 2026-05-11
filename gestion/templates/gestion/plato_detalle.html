@@ -1,0 +1,25 @@
+{% extends 'gestion/base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'gestion/css/crud.css' %}">{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2 class="page-title">Detalle del Plato</h2>
+    <a href="{% url 'lista_platos' %}" class="btn btn-secondary">← Volver</a>
+</div>
+
+<div class="form-wrapper">
+    <table>
+        <tr><th>ID</th><td>{{ plato.id }}</td></tr>
+        <tr><th>Nombre</th><td>{{ plato.nombre_plato }}</td></tr>
+        <tr><th>Descripción</th><td>{{ plato.descripcion|default:"—" }}</td></tr>
+        <tr><th>Categoría</th><td>{{ plato.categoria|default:"—" }}</td></tr>
+        <tr><th>Precio</th><td>${{ plato.precio }}</td></tr>
+        <tr><th>Disponible</th><td>{% if plato.disponible %}✅ Sí{% else %}❌ No{% endif %}</td></tr>
+    </table>
+    <div class="form-actions" style="margin-top:1rem;">
+        <a href="{% url 'editar_plato' plato.pk %}" class="btn btn-secondary">✏️ Editar</a>
+        <a href="{% url 'eliminar_plato' plato.pk %}" class="btn btn-danger">🗑️ Eliminar</a>
+    </div>
+</div>
+{% endblock %}
