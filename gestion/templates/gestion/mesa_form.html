@@ -1,0 +1,39 @@
+{% extends 'gestion/base.html' %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'gestion/css/crud.css' %}">
+<link rel="stylesheet" href="{% static 'gestion/css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2 class="page-title">{{ titulo }}</h2>
+    <a href="{% url 'lista_mesas' %}" class="btn btn-secondary">← Volver</a>
+</div>
+
+<div class="form-wrapper">
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Número de mesa *</label>
+            <input type="number" name="numero_mesa" value="{{ obj.numero_mesa|default:'' }}" min="1" required>
+        </div>
+        <div class="form-group">
+            <label>Capacidad *</label>
+            <input type="number" name="capacidad" value="{{ obj.capacidad|default:'' }}" min="1" required>
+        </div>
+        <div class="form-group">
+            <label>Estado *</label>
+            <select name="estado_mesa">
+                {% for estado in estados %}
+                <option value="{{ estado }}" {% if obj.estado_mesa == estado %}selected{% endif %}>{{ estado }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">💾 Guardar</button>
+            <a href="{% url 'lista_mesas' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

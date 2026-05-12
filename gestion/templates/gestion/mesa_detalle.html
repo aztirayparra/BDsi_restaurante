@@ -1,0 +1,23 @@
+{% extends 'gestion/base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'gestion/css/crud.css' %}">{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2 class="page-title">Detalle de Mesa</h2>
+    <a href="{% url 'lista_mesas' %}" class="btn btn-secondary">← Volver</a>
+</div>
+
+<div class="form-wrapper">
+    <table>
+        <tr><th>ID</th><td>{{ mesa.id }}</td></tr>
+        <tr><th>Número</th><td>Mesa {{ mesa.numero_mesa }}</td></tr>
+        <tr><th>Capacidad</th><td>{{ mesa.capacidad }} personas</td></tr>
+        <tr><th>Estado</th><td>{{ mesa.estado_mesa }}</td></tr>
+    </table>
+    <div class="form-actions" style="margin-top:1rem;">
+        <a href="{% url 'editar_mesa' mesa.pk %}" class="btn btn-secondary">✏️ Editar</a>
+        <a href="{% url 'eliminar_mesa' mesa.pk %}" class="btn btn-danger">🗑️ Eliminar</a>
+    </div>
+</div>
+{% endblock %}

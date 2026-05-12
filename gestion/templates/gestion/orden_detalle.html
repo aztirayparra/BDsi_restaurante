@@ -1,0 +1,51 @@
+{% extends 'gestion/base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'gestion/css/crud.css' %}">{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2 class="page-title">Detalle Orden #{{ orden.id }}</h2>
+    <a href="{% url 'lista_ordenes' %}" class="btn btn-secondary">← Volver</a>
+</div>
+
+<div class="form-wrapper">
+    <table>
+        <tr><th>ID</th><td>#{{ orden.id }}</td></tr>
+        <tr><th>Cliente</th><td>{{ orden.cliente.nombre }}</td></tr>
+        <tr><th>Empleado</th><td>{{ orden.empleado.nombre }}</td></tr>
+        <tr><th>Mesa</th><td>Mesa {{ orden.mesa.numero_mesa }}</td></tr>
+        <tr><th>Fecha</th><td>{{ orden.fecha_hora }}</td></tr>
+        <tr><th>Estado</th><td>{{ orden.estado_orden }}</td></tr>
+        <tr><th>Total</th><td><strong>${{ orden.total }}</strong></td></tr>
+    </table>
+
+    <h3 style="margin-top:1.5rem; color:#8B0000;">🍽️ Platos en esta orden</h3>
+    <table style="margin-top:0.5rem;">
+        <thead>
+            <tr>
+                <th>Plato</th>
+                <th>Cantidad</th>
+                <th>Precio unitario</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for detalle in detalles %}
+            <tr>
+                <td>{{ detalle.plato.nombre_plato }}</td>
+                <td>{{ detalle.cantidad }}</td>
+                <td>${{ detalle.precio_unitario }}</td>
+                <td>${{ detalle.subtotal }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" style="text-align:center;color:#888;">Sin platos agregados.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="form-actions" style="margin-top:1rem;">
+        <a href="{% url 'editar_orden' orden.pk %}" class="btn btn-secondary">✏️ Editar</a>
+        <a href="{% url 'eliminar_orden' orden.pk %}" class="btn btn-danger">🗑️ Eliminar</a>
+    </div>
+</div>
+{% endblock %}

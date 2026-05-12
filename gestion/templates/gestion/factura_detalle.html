@@ -1,0 +1,27 @@
+{% extends 'gestion/base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'gestion/css/crud.css' %}">{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2 class="page-title">Factura #{{ factura.id }}</h2>
+    <a href="{% url 'lista_facturas' %}" class="btn btn-secondary">← Volver</a>
+</div>
+
+<div class="form-wrapper">
+    <table>
+        <tr><th>ID Factura</th><td>#{{ factura.id }}</td></tr>
+        <tr><th>Orden</th><td>#{{ factura.orden.id }}</td></tr>
+        <tr><th>Cliente</th><td>{{ factura.orden.cliente.nombre }}</td></tr>
+        <tr><th>Fecha</th><td>{{ factura.fecha_factura }}</td></tr>
+        <tr><th>Subtotal</th><td>${{ factura.subtotal }}</td></tr>
+        <tr><th>Impuesto (8%)</th><td>${{ factura.impuesto }}</td></tr>
+        <tr><th>Total</th><td><strong>${{ factura.total_factura }}</strong></td></tr>
+        <tr><th>Método de pago</th><td>{{ factura.metodo_pago }}</td></tr>
+    </table>
+    <div class="form-actions" style="margin-top:1rem;">
+        <a href="{% url 'editar_factura' factura.pk %}" class="btn btn-secondary">✏️ Editar</a>
+        <a href="{% url 'eliminar_factura' factura.pk %}" class="btn btn-danger">🗑️ Eliminar</a>
+    </div>
+</div>
+{% endblock %}

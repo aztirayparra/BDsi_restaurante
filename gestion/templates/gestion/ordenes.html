@@ -1,27 +1,54 @@
 {% extends 'gestion/base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'gestion/css/crud.css' %}">{% endblock %}
 
 {% block content %}
-<h2>Órdenes</h2>
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2 class="page-title">Órdenes</h2>
+    <a href="{% url 'crear_orden' %}" class="btn btn-primary">➕ Nueva orden</a>
+</div>
+
+<form method="get" style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+    <input type="text" name="q" value="{{ query }}" placeholder="Buscar por cliente o estado..."
+        style="padding:7px 12px; border:1px solid #ddd; border-radius:5px; flex:1; font-size:0.9rem;">
+    <button type="submit" class="btn btn-primary">🔍 Buscar</button>
+    {% if query %}
+    <a href="{% url 'lista_ordenes' %}" class="btn btn-secondary">✖ Limpiar</a>
+    {% endif %}
+</form>
+
 <table>
-    <tr>
-        <th>ID</th>
-        <th>Cliente</th>
-        <th>Empleado</th>
-        <th>Mesa</th>
-        <th>Fecha</th>
-        <th>Estado</th>
-        <th>Total</th>
-    </tr>
-    {% for orden in ordenes %}
-    <tr>
-        <td>{{ orden.id }}</td>
-        <td>{{ orden.cliente.nombre }}</td>
-        <td>{{ orden.empleado.nombre }}</td>
-        <td>{{ orden.mesa.numero_mesa }}</td>
-        <td>{{ orden.fecha_hora }}</td>
-        <td>{{ orden.estado_orden }}</td>
-        <td>{{ orden.total }}</td>
-    </tr>
-    {% endfor %}
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Cliente</th>
+            <th>Empleado</th>
+            <th>Mesa</th>
+            <th>Estado</th>
+            <th>Total</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for orden in ordenes %}
+        <tr>
+            <td>#{{ orden.id }}</td>
+            <td>{{ orden.cliente.nombre }}</td>
+            <td>{{ orden.empleado.nombre }}</td>
+            <td>Mesa {{ orden.mesa.numero_mesa }}</td>
+            <td>{{ orden.estado_orden }}</td>
+            <td>${{ orden.total }}</td>
+            <td>
+                <div class="acciones">
+                    <a href="{% url 'detalle_orden' orden.pk %}" class="btn btn-primary btn-sm">👁️ Ver</a>
+                    <a href="{% url 'editar_orden' orden.pk %}" class="btn btn-secondary btn-sm">✏️ Editar</a>
+                    <a href="{% url 'eliminar_orden' orden.pk %}" class="btn btn-danger btn-sm">🗑️ Eliminar</a>
+                </div>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" style="text-align:center;color:#888;">No hay órdenes registradas.</td></tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% endblock %}

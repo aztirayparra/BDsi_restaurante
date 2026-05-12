@@ -1,0 +1,46 @@
+{% extends 'gestion/base.html' %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'gestion/css/crud.css' %}">
+<link rel="stylesheet" href="{% static 'gestion/css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2 class="page-title">{{ titulo }}</h2>
+    <a href="{% url 'lista_facturas' %}" class="btn btn-secondary">← Volver</a>
+</div>
+
+<div class="form-wrapper">
+    <form method="post" novalidate>
+        {% csrf_token %}
+        {% if not obj %}
+        <div class="form-group">
+            <label>Orden (solo órdenes entregadas sin factura) *</label>
+            <select name="orden">
+                {% for o in ordenes %}
+                <option value="{{ o.pk }}">Orden #{{ o.id }} — {{ o.cliente.nombre }} — ${{ o.total }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        {% else %}
+        <div class="form-group">
+            <label>Orden</label>
+            <input type="text" value="Orden #{{ obj.orden.id }} — {{ obj.orden.cliente.nombre }}" disabled>
+        </div>
+        {% endif %}
+        <div class="form-group">
+            <label>Método de pago *</label>
+            <select name="metodo_pago">
+                {% for metodo in metodos %}
+                <option value="{{ metodo }}" {% if obj.metodo_pago == metodo %}selected{% endif %}>{{ metodo }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">💾 Guardar</button>
+            <a href="{% url 'lista_facturas' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

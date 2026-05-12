@@ -1,0 +1,55 @@
+{% extends 'gestion/base.html' %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'gestion/css/crud.css' %}">
+<link rel="stylesheet" href="{% static 'gestion/css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2 class="page-title">{{ titulo }}</h2>
+    <a href="{% url 'lista_ordenes' %}" class="btn btn-secondary">← Volver</a>
+</div>
+
+<div class="form-wrapper">
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Cliente *</label>
+            <select name="cliente">
+                {% for c in clientes %}
+                <option value="{{ c.pk }}" {% if obj.cliente.pk == c.pk %}selected{% endif %}>{{ c.nombre }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Empleado *</label>
+            <select name="empleado">
+                {% for e in empleados %}
+                <option value="{{ e.pk }}" {% if obj.empleado.pk == e.pk %}selected{% endif %}>{{ e.nombre }} - {{ e.cargo }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Mesa *</label>
+            <select name="mesa">
+                {% for m in mesas %}
+                <option value="{{ m.pk }}" {% if obj.mesa.pk == m.pk %}selected{% endif %}>Mesa {{ m.numero_mesa }} - {{ m.estado_mesa }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Estado *</label>
+            <select name="estado_orden">
+                {% for estado in estados %}
+                <option value="{{ estado }}" {% if obj.estado_orden == estado %}selected{% endif %}>{{ estado }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">💾 Guardar</button>
+            <a href="{% url 'lista_ordenes' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -175,7 +177,238 @@ def eliminar_plato(request, pk):
         messages.success(request, 'Plato eliminado.')
         return redirect('lista_platos')
     return render(request, 'gestion/confirmar_eliminar.html', {'obj': plato, 'nombre': plato.nombre_plato, 'volver': 'lista_platos'})
-@login_required
+@login_required #proteger el login 
 def detalle_plato(request, pk):
     plato = get_object_or_404(Plato, pk=pk)
     return render(request, 'gestion/plato_detalle.html', {'plato': plato})
+
+
+
+# ── CRUD EMPLEADOS ────────────────────────────
+@login_required
+def lista_empleados(request):
+    query = request.GET.get('q', '')
+    empleados = Empleado.objects.all()
+    if query:
+        empleados = empleados.filter(nombre__icontains=query) | empleados.filter(cargo__icontains=query)
+    return render(request, 'gestion/empleados.html', {'empleados': empleados, 'query': query})
+
+@login_required
+def detalle_empleado(request, pk):
+    empleado = get_object_or_404(Empleado, pk=pk)
+    return render(request, 'gestion/empleado_detalle.html', {'empleado': empleado})
+
+@login_required
+def crear_empleado(request):
+    CARGOS = ['Mesero','Mesera','Cajero','Cajera','Administrador']
+    if request.method == 'POST':
+        Empleado.objects.create(
+            nombre=request.POST['nombre'],
+            cargo=request.POST['cargo'],
+            telefono=request.POST.get('telefono', ''),
+            correo=request.POST.get('correo', '') or None,
+        )
+        messages.success(request, 'Empleado creado.')
+        return redirect('lista_empleados')
+    return render(request, 'gestion/empleado_form.html', {'titulo': 'Nuevo Empleado', 'cargos': CARGOS})
+
+@login_required
+def editar_empleado(request, pk):
+    CARGOS = ['Mesero','Mesera','Cajero','Cajera','Administrador']
+    empleado = get_object_or_404(Empleado, pk=pk)
+    if request.method == 'POST':
+        empleado.nombre = request.POST['nombre']
+        empleado.cargo = request.POST['cargo']
+        empleado.telefono = request.POST.get('telefono', '')
+        empleado.correo = request.POST.get('correo', '') or None
+        empleado.save()
+        messages.success(request, 'Empleado actualizado.')
+        return redirect('lista_empleados')
+    return render(request, 'gestion/empleado_form.html', {'titulo': 'Editar Empleado', 'obj': empleado, 'cargos': CARGOS})
+
+@login_required
+def eliminar_empleado(request, pk):
+    empleado = get_object_or_404(Empleado, pk=pk)
+    if request.method == 'POST':
+        empleado.delete()
+        messages.success(request, 'Empleado eliminado.')
+        return redirect('lista_empleados')
+    return render(request, 'gestion/confirmar_eliminar.html', {'nombre': empleado.nombre, 'volver': 'lista_empleados'})
+# ── CRUD MESAS ────────────────────────────────
+@login_required
+def lista_mesas(request):
+    query = request.GET.get('q', '')
+    mesas = Mesa.objects.all()
+    if query:
+        mesas = mesas.filter(numero_mesa__icontains=query) | mesas.filter(estado_mesa__icontains=query)
+    return render(request, 'gestion/mesas.html', {'mesas': mesas, 'query': query})
+
+@login_required
+def detalle_mesa(request, pk):
+    mesa = get_object_or_404(Mesa, pk=pk)
+    return render(request, 'gestion/mesa_detalle.html', {'mesa': mesa})
+
+@login_required
+def crear_mesa(request):
+    ESTADOS = ['Disponible', 'Ocupada', 'Reservada']
+    if request.method == 'POST':
+        Mesa.objects.create(
+            numero_mesa=request.POST['numero_mesa'],
+            capacidad=request.POST['capacidad'],
+            estado_mesa=request.POST['estado_mesa'],
+        )
+        messages.success(request, 'Mesa creada.')
+        return redirect('lista_mesas')
+    return render(request, 'gestion/mesa_form.html', {'titulo': 'Nueva Mesa', 'estados': ESTADOS})
+
+@login_required
+def editar_mesa(request, pk):
+    ESTADOS = ['Disponible', 'Ocupada', 'Reservada']
+    mesa = get_object_or_404(Mesa, pk=pk)
+    if request.method == 'POST':
+        mesa.numero_mesa = request.POST['numero_mesa']
+        mesa.capacidad = request.POST['capacidad']
+        mesa.estado_mesa = request.POST['estado_mesa']
+        mesa.save()
+        messages.success(request, 'Mesa actualizada.')
+        return redirect('lista_mesas')
+    return render(request, 'gestion/mesa_form.html', {'titulo': 'Editar Mesa', 'obj': mesa, 'estados': ESTADOS})
+
+@login_required
+def eliminar_mesa(request, pk):
+    mesa = get_object_or_404(Mesa, pk=pk)
+    if request.method == 'POST':
+        mesa.delete()
+        messages.success(request, 'Mesa eliminada.')
+        return redirect('lista_mesas')
+    return render(request, 'gestion/confirmar_eliminar.html', {'nombre': f'Mesa {mesa.numero_mesa}', 'volver': 'lista_mesas'})
+
+# ── CRUD ÓRDENES ──────────────────────────────
+@login_required
+def lista_ordenes(request):
+    query = request.GET.get('q', '')
+    ordenes = Orden.objects.select_related('cliente', 'empleado', 'mesa').all()
+    if query:
+        ordenes = ordenes.filter(cliente__nombre__icontains=query) | ordenes.filter(estado_orden__icontains=query)
+    return render(request, 'gestion/ordenes.html', {'ordenes': ordenes, 'query': query})
+
+@login_required
+def detalle_orden(request, pk):
+    orden = get_object_or_404(Orden, pk=pk)
+    detalles = orden.detalles.select_related('plato').all()
+    return render(request, 'gestion/orden_detalle.html', {'orden': orden, 'detalles': detalles})
+
+@login_required
+def crear_orden(request):
+    ESTADOS = ['Activa', 'En preparación', 'Entregada', 'Facturada', 'Cancelada']
+    if request.method == 'POST':
+        Orden.objects.create(
+            cliente=get_object_or_404(Cliente, pk=request.POST['cliente']),
+            empleado=get_object_or_404(Empleado, pk=request.POST['empleado']),
+            mesa=get_object_or_404(Mesa, pk=request.POST['mesa']),
+            estado_orden=request.POST['estado_orden'],
+        )
+        messages.success(request, 'Orden creada.')
+        return redirect('lista_ordenes')
+    return render(request, 'gestion/orden_form.html', {
+        'titulo': 'Nueva Orden',
+        'clientes': Cliente.objects.all(),
+        'empleados': Empleado.objects.all(),
+        'mesas': Mesa.objects.all(),
+        'estados': ESTADOS,
+    })
+
+@login_required
+def editar_orden(request, pk):
+    ESTADOS = ['Activa', 'En preparación', 'Entregada', 'Facturada', 'Cancelada']
+    orden = get_object_or_404(Orden, pk=pk)
+    if request.method == 'POST':
+        orden.cliente = get_object_or_404(Cliente, pk=request.POST['cliente'])
+        orden.empleado = get_object_or_404(Empleado, pk=request.POST['empleado'])
+        orden.mesa = get_object_or_404(Mesa, pk=request.POST['mesa'])
+        orden.estado_orden = request.POST['estado_orden']
+        orden.save()
+        messages.success(request, 'Orden actualizada.')
+        return redirect('lista_ordenes')
+    return render(request, 'gestion/orden_form.html', {
+        'titulo': 'Editar Orden',
+        'obj': orden,
+        'clientes': Cliente.objects.all(),
+        'empleados': Empleado.objects.all(),
+        'mesas': Mesa.objects.all(),
+        'estados': ESTADOS,
+    })
+
+@login_required
+def eliminar_orden(request, pk):
+    orden = get_object_or_404(Orden, pk=pk)
+    if request.method == 'POST':
+        orden.delete()
+        messages.success(request, 'Orden eliminada.')
+        return redirect('lista_ordenes')
+    return render(request, 'gestion/confirmar_eliminar.html', {'nombre': f'Orden #{orden.id}', 'volver': 'lista_ordenes'})
+
+# ── CRUD FACTURAS ─────────────────────────────
+@login_required
+def lista_facturas(request):
+    query = request.GET.get('q', '')
+    facturas = Factura.objects.select_related('orden', 'orden__cliente').all()
+    if query:
+        facturas = facturas.filter(orden__cliente__nombre__icontains=query) | facturas.filter(metodo_pago__icontains=query)
+    return render(request, 'gestion/facturas.html', {'facturas': facturas, 'query': query})
+
+@login_required
+def detalle_factura(request, pk):
+    factura = get_object_or_404(Factura, pk=pk)
+    return render(request, 'gestion/factura_detalle.html', {'factura': factura})
+
+@login_required
+def crear_factura(request):
+    METODOS = ['Efectivo', 'Tarjeta', 'Transferencia', 'Nequi', 'Daviplata']
+    ordenes_disponibles = Orden.objects.filter(estado_orden='Entregada').exclude(factura__isnull=False)
+    if request.method == 'POST':
+        orden = get_object_or_404(Orden, pk=request.POST['orden'])
+        subtotal = orden.total
+        impuesto = round(subtotal * Decimal('0.08'), 2)
+        total_factura = subtotal + impuesto
+        Factura.objects.create(
+            orden=orden,
+            subtotal=subtotal,
+            impuesto=impuesto,
+            total_factura=total_factura,
+            metodo_pago=request.POST['metodo_pago'],
+        )
+        orden.estado_orden = 'Facturada'
+        orden.save()
+        messages.success(request, 'Factura creada.')
+        return redirect('lista_facturas')
+    return render(request, 'gestion/factura_form.html', {
+        'titulo': 'Nueva Factura',
+        'ordenes': ordenes_disponibles,
+        'metodos': METODOS,
+    })
+
+@login_required
+def editar_factura(request, pk):
+    METODOS = ['Efectivo', 'Tarjeta', 'Transferencia', 'Nequi', 'Daviplata']
+    factura = get_object_or_404(Factura, pk=pk)
+    if request.method == 'POST':
+        factura.metodo_pago = request.POST['metodo_pago']
+        factura.save()
+        messages.success(request, 'Factura actualizada.')
+        return redirect('lista_facturas')
+    return render(request, 'gestion/factura_form.html', {
+        'titulo': 'Editar Factura',
+        'obj': factura,
+        'metodos': METODOS,
+    })
+
+@login_required
+def eliminar_factura(request, pk):
+    factura = get_object_or_404(Factura, pk=pk)
+    if request.method == 'POST':
+        factura.delete()
+        messages.success(request, 'Factura eliminada.')
+        return redirect('lista_facturas')
+    return render(request, 'gestion/confirmar_eliminar.html', {'nombre': f'Factura #{factura.id}', 'volver': 'lista_facturas'})
+    

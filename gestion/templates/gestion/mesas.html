@@ -1,21 +1,50 @@
 {% extends 'gestion/base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'gestion/css/crud.css' %}">{% endblock %}
 
 {% block content %}
-<h2>Mesas</h2>
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2 class="page-title">Mesas</h2>
+    <a href="{% url 'crear_mesa' %}" class="btn btn-primary">➕ Nueva mesa</a>
+</div>
+
+<form method="get" style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+    <input type="text" name="q" value="{{ query }}" placeholder="Buscar por número o estado..."
+        style="padding:7px 12px; border:1px solid #ddd; border-radius:5px; flex:1; font-size:0.9rem;">
+    <button type="submit" class="btn btn-primary">🔍 Buscar</button>
+    {% if query %}
+    <a href="{% url 'lista_mesas' %}" class="btn btn-secondary">✖ Limpiar</a>
+    {% endif %}
+</form>
+
 <table>
-    <tr>
-        <th>ID</th>
-        <th>Número</th>
-        <th>Capacidad</th>
-        <th>Estado</th>
-    </tr>
-    {% for mesa in mesas %}
-    <tr>
-        <td>{{ mesa.id }}</td>
-        <td>{{ mesa.numero_mesa }}</td>
-        <td>{{ mesa.capacidad }}</td>
-        <td>{{ mesa.estado_mesa }}</td>
-    </tr>
-    {% endfor %}
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Número</th>
+            <th>Capacidad</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for mesa in mesas %}
+        <tr>
+            <td>{{ mesa.id }}</td>
+            <td>Mesa {{ mesa.numero_mesa }}</td>
+            <td>{{ mesa.capacidad }} personas</td>
+            <td>{{ mesa.estado_mesa }}</td>
+            <td>
+                <div class="acciones">
+                    <a href="{% url 'detalle_mesa' mesa.pk %}" class="btn btn-primary btn-sm">👁️ Ver</a>
+                    <a href="{% url 'editar_mesa' mesa.pk %}" class="btn btn-secondary btn-sm">✏️ Editar</a>
+                    <a href="{% url 'eliminar_mesa' mesa.pk %}" class="btn btn-danger btn-sm">🗑️ Eliminar</a>
+                </div>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center;color:#888;">No hay mesas registradas.</td></tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% endblock %}

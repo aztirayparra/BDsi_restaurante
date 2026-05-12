@@ -1,23 +1,52 @@
 {% extends 'gestion/base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'gestion/css/crud.css' %}">{% endblock %}
 
 {% block content %}
-<h2>Empleados</h2>
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2 class="page-title">Empleados</h2>
+    <a href="{% url 'crear_empleado' %}" class="btn btn-primary">➕ Nuevo empleado</a>
+</div>
+
+<form method="get" style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+    <input type="text" name="q" value="{{ query }}" placeholder="Buscar por nombre o cargo..."
+        style="padding:7px 12px; border:1px solid #ddd; border-radius:5px; flex:1; font-size:0.9rem;">
+    <button type="submit" class="btn btn-primary">🔍 Buscar</button>
+    {% if query %}
+    <a href="{% url 'lista_empleados' %}" class="btn btn-secondary">✖ Limpiar</a>
+    {% endif %}
+</form>
+
 <table>
-    <tr>
-        <th>ID</th>
-        <th>Nombre</th>
-        <th>Cargo</th>
-        <th>Teléfono</th>
-        <th>Correo</th>
-    </tr>
-    {% for empleado in empleados %}
-    <tr>
-        <td>{{ empleado.id }}</td>
-        <td>{{ empleado.nombre }}</td>
-        <td>{{ empleado.cargo }}</td>
-        <td>{{ empleado.telefono }}</td>
-        <td>{{ empleado.correo }}</td>
-    </tr>
-    {% endfor %}
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Cargo</th>
+            <th>Teléfono</th>
+            <th>Correo</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for empleado in empleados %}
+        <tr>
+            <td>{{ empleado.id }}</td>
+            <td>{{ empleado.nombre }}</td>
+            <td>{{ empleado.cargo }}</td>
+            <td>{{ empleado.telefono|default:"—" }}</td>
+            <td>{{ empleado.correo|default:"—" }}</td>
+            <td>
+                <div class="acciones">
+                    <a href="{% url 'detalle_empleado' empleado.pk %}" class="btn btn-primary btn-sm">👁️ Ver</a>
+                    <a href="{% url 'editar_empleado' empleado.pk %}" class="btn btn-secondary btn-sm">✏️ Editar</a>
+                    <a href="{% url 'eliminar_empleado' empleado.pk %}" class="btn btn-danger btn-sm">🗑️ Eliminar</a>
+                </div>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align:center;color:#888;">No hay empleados registrados.</td></tr>
+        {% endfor %}
+    </tbody>
 </table>
 {% endblock %}

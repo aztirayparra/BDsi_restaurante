@@ -1,0 +1,24 @@
+{% extends 'gestion/base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'gestion/css/crud.css' %}">{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2 class="page-title">Detalle del Empleado</h2>
+    <a href="{% url 'lista_empleados' %}" class="btn btn-secondary">← Volver</a>
+</div>
+
+<div class="form-wrapper">
+    <table>
+        <tr><th>ID</th><td>{{ empleado.id }}</td></tr>
+        <tr><th>Nombre</th><td>{{ empleado.nombre }}</td></tr>
+        <tr><th>Cargo</th><td>{{ empleado.cargo }}</td></tr>
+        <tr><th>Teléfono</th><td>{{ empleado.telefono|default:"—" }}</td></tr>
+        <tr><th>Correo</th><td>{{ empleado.correo|default:"—" }}</td></tr>
+    </table>
+    <div class="form-actions" style="margin-top:1rem;">
+        <a href="{% url 'editar_empleado' empleado.pk %}" class="btn btn-secondary">✏️ Editar</a>
+        <a href="{% url 'eliminar_empleado' empleado.pk %}" class="btn btn-danger">🗑️ Eliminar</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends 'gestion/base.html' %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'gestion/css/crud.css' %}">
+<link rel="stylesheet" href="{% static 'gestion/css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2 class="page-title">{{ titulo }}</h2>
+    <a href="{% url 'lista_empleados' %}" class="btn btn-secondary">← Volver</a>
+</div>
+
+<div class="form-wrapper">
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Nombre *</label>
+            <input type="text" name="nombre" value="{{ obj.nombre|default:'' }}" required>
+        </div>
+        <div class="form-group">
+            <label>Cargo *</label>
+            <select name="cargo">
+                {% for cargo in cargos %}
+                <option value="{{ cargo }}" {% if obj.cargo == cargo %}selected{% endif %}>{{ cargo }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Teléfono</label>
+            <input type="text" name="telefono" value="{{ obj.telefono|default:'' }}">
+        </div>
+        <div class="form-group">
+            <label>Correo</label>
+            <input type="email" name="correo" value="{{ obj.correo|default:'' }}">
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">💾 Guardar</button>
+            <a href="{% url 'lista_empleados' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
