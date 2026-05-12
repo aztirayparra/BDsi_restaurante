@@ -4,30 +4,31 @@
 
 {% block content %}
 <div style="display:flex; justify-content:space-between; align-items:center;">
-    <h2 class="page-title">Detalle Orden #{{ orden.id }}</h2>
+    <h2 class="page-title">📋 Orden #{{ orden.id }}</h2>
     <a href="{% url 'lista_ordenes' %}" class="btn btn-secondary">← Volver</a>
 </div>
 
-<div class="form-wrapper">
+<!-- Info de la orden -->
+<div style="background:#fff; border-radius:8px; box-shadow:0 4px 12px rgba(0,0,0,0.08); padding:1.5rem; margin-bottom:1.5rem;">
     <table>
         <tr><th>Cliente</th><td>{{ orden.cliente.nombre }}</td></tr>
-        <tr><th>Empleado</th><td>{{ orden.empleado.nombre }}</td></tr>
+        <tr><th>Empleado</th><td>{{ orden.empleado.nombre }} — {{ orden.empleado.cargo }}</td></tr>
         <tr><th>Mesa</th><td>Mesa {{ orden.mesa.numero_mesa }}</td></tr>
-        <tr><th>Fecha</th><td>{{ orden.fecha_hora }}</td></tr>
+        <tr><th>Fecha</th><td>{{ orden.fecha_hora|date:"d/m/Y H:i" }}</td></tr>
         <tr><th>Estado</th><td>{{ orden.estado_orden }}</td></tr>
-        <tr><th>Total</th><td><strong>${{ orden.total }}</strong></td></tr>
+        <tr><th>Total</th><td><strong style="color:#8B0000; font-size:1.1rem;">${{ orden.total }}</strong></td></tr>
     </table>
 </div>
 
-<h3 style="margin-top:1.5rem; color:#8B0000;">🍽️ Platos en esta orden</h3>
-<table style="margin-top:0.5rem;">
+<!-- Platos -->
+<h3 style="color:#8B0000; margin-bottom:0.5rem;">🍽️ Platos de la orden</h3>
+<table>
     <thead>
         <tr>
             <th>Plato</th>
             <th>Cantidad</th>
             <th>Precio unitario</th>
             <th>Subtotal</th>
-            <th>Acciones</th>
         </tr>
     </thead>
     <tbody>
@@ -37,34 +38,24 @@
             <td>{{ detalle.cantidad }}</td>
             <td>${{ detalle.precio_unitario }}</td>
             <td>${{ detalle.subtotal }}</td>
-            <td>
-                <form method="post" action="{% url 'eliminar_plato_orden' detalle.pk %}">
-                    {% csrf_token %}
-                    <button type="submit" class="btn btn-danger btn-sm">🗑️ Quitar</button>
-                </form>
-            </td>
         </tr>
         {% empty %}
-        <tr><td colspan="5" style="text-align:center;color:#888;">Sin platos agregados.</td></tr>
+        <tr><td colspan="4" style="text-align:center;color:#888;">Sin platos registrados.</td></tr>
         {% endfor %}
     </tbody>
 </table>
 
-<h3 style="margin-top:1.5rem; color:#8B0000;">➕ Agregar plato</h3>
-<form method="post" action="{% url 'agregar_plato_orden' orden.pk %}" style="display:flex; gap:0.5rem; margin-top:0.5rem; flex-wrap:wrap;">
-    {% csrf_token %}
-    <select name="plato" style="padding:7px 12px; border:1px solid #ddd; border-radius:5px; flex:2;">
-        {% for plato in platos %}
-        <option value="{{ plato.pk }}">{{ plato.nombre_plato }} — ${{ plato.precio }}</option>
-        {% endfor %}
-    </select>
-    <input type="number" name="cantidad" value="1" min="1"
-        style="padding:7px 12px; border:1px solid #ddd; border-radius:5px; width:80px;">
-    <button type="submit" class="btn btn-primary">➕ Agregar</button>
-</form>
+<div style="text-align:right; margin-top:0.5rem; font-size:1.1rem; font-weight:bold; color:#8B0000;">
+    Total: ${{ orden.total }}
+</div>
 
+<!-- Acciones -->
 <div class="form-actions" style="margin-top:1.5rem;">
-    <a href="{% url 'editar_orden' orden.pk %}" class="btn btn-secondary">✏️ Editar orden</a>
-    <a href="{% url 'eliminar_orden' orden.pk %}" class="btn btn-danger">🗑️ Eliminar orden</a>
+    <a href="{% url 'agregar_platos_orden' orden.pk %}" class="btn btn-secondary">✏️ Editar platos</a>
+    <a href="{% url 'editar_orden' orden.pk %}" class="btn btn-secondary">📝 Editar datos</a>
+    {% if orden.estado_orden != 'Facturada' and orden.estado_orden != 'Cancelada' %}
+    <a href="{% url 'facturar_orden' orden.pk %}" class="btn btn-primary">💳 Facturar</a>
+    {% endif %}
+    <a href="{% url 'eliminar_orden' orden.pk %}" class="btn btn-danger">🗑️ Eliminar</a>
 </div>
 {% endblock %}

@@ -1,0 +1,39 @@
+{% extends 'gestion/base.html' %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'gestion/css/crud.css' %}">
+<link rel="stylesheet" href="{% static 'gestion/css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2 class="page-title">💳 Facturar Orden #{{ orden.id }}</h2>
+    <a href="{% url 'lista_ordenes' %}" class="btn btn-secondary">← Volver</a>
+</div>
+
+<div class="form-wrapper">
+    <table style="margin-bottom:1.5rem;">
+        <tr><th>Cliente</th><td>{{ orden.cliente.nombre }}</td></tr>
+        <tr><th>Mesa</th><td>Mesa {{ orden.mesa.numero_mesa }}</td></tr>
+        <tr><th>Subtotal</th><td>${{ orden.total }}</td></tr>
+        <tr><th>Impuesto (8%)</th><td>${{ orden.total|floatformat:2 }}</td></tr>
+        <tr><th>Total a pagar</th><td><strong style="color:#8B0000; font-size:1.1rem;">${{ orden.total }}</strong></td></tr>
+    </table>
+
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Método de pago *</label>
+            <select name="metodo_pago" style="width:100%; padding:8px 12px; border:1px solid #ddd; border-radius:5px;">
+                {% for metodo in metodos %}
+                <option value="{{ metodo }}">{{ metodo }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">💳 Confirmar factura</button>
+            <a href="{% url 'lista_ordenes' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

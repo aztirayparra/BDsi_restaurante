@@ -44,15 +44,15 @@ urlpatterns = [
     path('mesas/<int:pk>/editar/', views.editar_mesa, name='editar_mesa'),
     path('mesas/<int:pk>/eliminar/', views.eliminar_mesa, name='eliminar_mesa'),
 
-    # CRUD Ordenes
-    path('ordenes/', views.lista_ordenes, name='lista_ordenes'),
-    path('ordenes/nueva/', views.crear_orden, name='crear_orden'),
-    path('ordenes/<int:pk>/', views.detalle_orden, name='detalle_orden'),
-    path('ordenes/<int:pk>/editar/', views.editar_orden, name='editar_orden'),
-    path('ordenes/<int:pk>/eliminar/', views.eliminar_orden, name='eliminar_orden'),
-    path('ordenes/<int:pk>/agregar-plato/', views.agregar_plato_orden, name='agregar_plato_orden'),
-    path('ordenes/detalle/<int:detalle_pk>/eliminar/', views.eliminar_plato_orden, name='eliminar_plato_orden'),
-
+  # CRUD Ordenes
+path('ordenes/', views.lista_ordenes, name='lista_ordenes'),
+path('ordenes/nueva/', views.crear_orden, name='crear_orden'),
+path('ordenes/<int:pk>/', views.detalle_orden, name='detalle_orden'),
+path('ordenes/<int:pk>/platos/', views.agregar_platos_orden, name='agregar_platos_orden'),
+path('ordenes/<int:pk>/editar/', views.editar_orden, name='editar_orden'),
+path('ordenes/<int:pk>/eliminar/', views.eliminar_orden, name='eliminar_orden'),
+path('ordenes/<int:pk>/facturar/', views.facturar_orden, name='facturar_orden'),
+path('ordenes/detalle/<int:detalle_pk>/eliminar/', views.eliminar_plato_orden, name='eliminar_plato_orden'),
 
     # CRUD Facturas
     path('facturas/', views.lista_facturas, name='lista_facturas'),

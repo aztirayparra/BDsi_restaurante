@@ -1,0 +1,80 @@
+{% extends 'gestion/base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'gestion/css/crud.css' %}">{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2 class="page-title">🍽️ Agregar Platos — Orden #{{ orden.id }}</h2>
+    <a href="{% url 'lista_ordenes' %}" class="btn btn-secondary">← Volver</a>
+</div>
+
+<div style="background:#fff3cd; border:1px solid #ffc107; border-radius:8px; padding:1rem; margin-bottom:1rem;">
+    <strong>📋 Resumen:</strong> Cliente: {{ orden.cliente.nombre }} | 
+    Empleado: {{ orden.empleado.nombre }} | 
+    Mesa: {{ orden.mesa.numero_mesa }} |
+    <strong>Total: ${{ orden.total }}</strong>
+</div>
+
+<!-- Formulario agregar plato -->
+<form method="post" style="display:flex; gap:0.5rem; margin-bottom:1.5rem; flex-wrap:wrap; align-items:flex-end;">
+    {% csrf_token %}
+    <div style="flex:2;">
+        <label style="font-size:0.85rem; font-weight:bold; color:#444;">Plato</label>
+        <select name="plato" style="width:100%; padding:8px 12px; border:1px solid #ddd; border-radius:5px;">
+            {% for plato in platos %}
+            <option value="{{ plato.pk }}">{{ plato.nombre_plato }} — ${{ plato.precio }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div style="width:100px;">
+        <label style="font-size:0.85rem; font-weight:bold; color:#444;">Cantidad</label>
+        <input type="number" name="cantidad" value="1" min="1"
+            style="width:100%; padding:8px 12px; border:1px solid #ddd; border-radius:5px;">
+    </div>
+    <button type="submit" name="agregar" class="btn btn-primary">➕ Agregar</button>
+</form>
+
+<!-- Tabla de platos agregados -->
+<h3 style="color:#8B0000; margin-bottom:0.5rem;">Platos en esta orden</h3>
+<table>
+    <thead>
+        <tr>
+            <th>Plato</th>
+            <th>Cantidad</th>
+            <th>Precio unitario</th>
+            <th>Subtotal</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for detalle in detalles %}
+        <tr>
+            <td>{{ detalle.plato.nombre_plato }}</td>
+            <td>{{ detalle.cantidad }}</td>
+            <td>${{ detalle.precio_unitario }}</td>
+            <td>${{ detalle.subtotal }}</td>
+            <td>
+                <form method="post" action="{% url 'eliminar_plato_orden' detalle.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger btn-sm">🗑️ Quitar</button>
+                </form>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center;color:#888;">No hay platos agregados aún.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div style="margin-top:1rem; text-align:right; font-size:1.1rem; font-weight:bold; color:#8B0000;">
+    Total: ${{ orden.total }}
+</div>
+
+<!-- Botón finalizar -->
+<form method="post" style="margin-top:1.5rem;">
+    {% csrf_token %}
+    <button type="submit" name="finalizar" class="btn btn-primary" style="padding:0.8rem 2rem; font-size:1rem;">
+        ✅ Finalizar Orden
+    </button>
+</form>
+{% endblock %}

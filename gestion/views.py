@@ -154,7 +154,6 @@ def crear_plato(request):
         messages.success(request, 'Plato creado.')
         return redirect('lista_platos')
     return render(request, 'gestion/plato_form.html', {'titulo': 'Nuevo Plato'})
-
 @login_required
 def editar_plato(request, pk):
     plato = get_object_or_404(Plato, pk=pk)
@@ -306,14 +305,14 @@ def detalle_orden(request, pk):
 def crear_orden(request):
     ESTADOS = ['Activa', 'En preparación', 'Entregada', 'Facturada', 'Cancelada']
     if request.method == 'POST':
-        Orden.objects.create(
+        orden = Orden.objects.create(
             cliente=get_object_or_404(Cliente, pk=request.POST['cliente']),
             empleado=get_object_or_404(Empleado, pk=request.POST['empleado']),
             mesa=get_object_or_404(Mesa, pk=request.POST['mesa']),
-            estado_orden=request.POST['estado_orden'],
+            estado_orden='Activa',
         )
-        messages.success(request, 'Orden creada.')
-        return redirect('lista_ordenes')
+        messages.success(request, 'Orden creada. Ahora agrega los platos.')
+        return redirect('agregar_platos_orden', pk=orden.pk)
     return render(request, 'gestion/orden_form.html', {
         'titulo': 'Nueva Orden',
         'clientes': Cliente.objects.all(),
@@ -418,24 +417,67 @@ def eliminar_factura(request, pk):
 
 # ── DETALLE ORDEN (agregar/quitar platos) ─────
 @login_required
-def agregar_plato_orden(request, pk):
+def agregar_platos_orden(request, pk):
     orden = get_object_or_404(Orden, pk=pk)
+    platos = Plato.objects.filter(disponible=True)
     if request.method == 'POST':
-        plato = get_object_or_404(Plato, pk=request.POST['plato'])
-        cantidad = int(request.POST.get('cantidad', 1))
-        detalle_existente = orden.detalles.filter(plato=plato).first()
-        if detalle_existente:
-            detalle_existente.cantidad += cantidad
-            detalle_existente.save()
+        if 'finalizar' in request.POST:
+            if orden.detalles.count() == 0:
+                messages.error(request, 'Debes agregar al menos un plato.')
+            else:
+                messages.success(request, f'Orden #{orden.id} finalizada con {orden.detalles.count()} plato(s).')
+                return redirect('lista_ordenes')
         else:
-            DetalleOrden.objects.create(orden=orden, plato=plato, cantidad=cantidad)
-        messages.success(request, f'"{plato.nombre_plato}" agregado a la orden.')
-    return redirect('detalle_orden', pk=pk)
+            plato = get_object_or_404(Plato, pk=request.POST['plato'])
+            cantidad = int(request.POST.get('cantidad', 1))
+            detalle_existente = orden.detalles.filter(plato=plato).first()
+            if detalle_existente:
+                detalle_existente.cantidad += cantidad
+                detalle_existente.save()
+            else:
+                DetalleOrden.objects.create(orden=orden, plato=plato, cantidad=cantidad)
+            messages.success(request, f'"{plato.nombre_plato}" agregado.')
+    detalles = orden.detalles.select_related('plato').all()
+    return render(request, 'gestion/orden_agregar_platos.html', {
+        'orden': orden,
+        'platos': platos,
+        'detalles': detalles,
+    })
 
 @login_required
-def eliminar_plato_orden(request, orden_pk, detalle_pk):
+def eliminar_plato_orden(request, detalle_pk):
     detalle = get_object_or_404(DetalleOrden, pk=detalle_pk)
     orden_pk = detalle.orden.pk
     detalle.delete()
-    messages.success(request, 'Plato eliminado de la orden.')
-    return redirect('detalle_orden', pk=orden_pk)
+    messages.success(request, 'Plato eliminado.')
+    return redirect('agregar_platos_orden', pk=orden_pk)
+
+@login_required
+def facturar_orden(request, pk):
+    orden = get_object_or_404(Orden, pk=pk)
+    METODOS = ['Efectivo', 'Tarjeta', 'Transferencia', 'Nequi', 'Daviplata']
+    if orden.estado_orden == 'Facturada':
+        messages.error(request, 'Esta orden ya fue facturada.')
+        return redirect('lista_ordenes')
+    if orden.detalles.count() == 0:
+        messages.error(request, 'No puedes facturar una orden sin platos.')
+        return redirect('lista_ordenes')
+    if request.method == 'POST':
+        subtotal = orden.total
+        impuesto = round(subtotal * Decimal('0.08'), 2)
+        total_factura = subtotal + impuesto
+        Factura.objects.create(
+            orden=orden,
+            subtotal=subtotal,
+            impuesto=impuesto,
+            total_factura=total_factura,
+            metodo_pago=request.POST['metodo_pago'],
+        )
+        orden.estado_orden = 'Facturada'
+        orden.save()
+        messages.success(request, f'Orden #{orden.id} facturada exitosamente.')
+        return redirect('lista_facturas')
+    return render(request, 'gestion/facturar_orden.html', {
+        'orden': orden,
+        'metodos': METODOS,
+    })
