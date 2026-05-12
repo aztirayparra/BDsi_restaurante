@@ -50,6 +50,8 @@ urlpatterns = [
     path('ordenes/<int:pk>/', views.detalle_orden, name='detalle_orden'),
     path('ordenes/<int:pk>/editar/', views.editar_orden, name='editar_orden'),
     path('ordenes/<int:pk>/eliminar/', views.eliminar_orden, name='eliminar_orden'),
+    path('ordenes/<int:pk>/agregar-plato/', views.agregar_plato_orden, name='agregar_plato_orden'),
+    path('ordenes/detalle/<int:detalle_pk>/eliminar/', views.eliminar_plato_orden, name='eliminar_plato_orden'),
 
 
     # CRUD Facturas

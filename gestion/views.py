@@ -5,7 +5,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib import messages
-from .models import Cliente, Empleado, Mesa, Plato, Orden, Factura
+from .models import Cliente, Empleado, Mesa, Plato, Orden, Factura,DetalleOrden
 
 
 # ── AUTH ──────────────────────────────────────
@@ -296,8 +296,12 @@ def lista_ordenes(request):
 def detalle_orden(request, pk):
     orden = get_object_or_404(Orden, pk=pk)
     detalles = orden.detalles.select_related('plato').all()
-    return render(request, 'gestion/orden_detalle.html', {'orden': orden, 'detalles': detalles})
-
+    platos = Plato.objects.filter(disponible=True)
+    return render(request, 'gestion/orden_detalle.html', {
+        'orden': orden,
+        'detalles': detalles,
+        'platos': platos,
+    })
 @login_required
 def crear_orden(request):
     ESTADOS = ['Activa', 'En preparación', 'Entregada', 'Facturada', 'Cancelada']
@@ -411,4 +415,27 @@ def eliminar_factura(request, pk):
         messages.success(request, 'Factura eliminada.')
         return redirect('lista_facturas')
     return render(request, 'gestion/confirmar_eliminar.html', {'nombre': f'Factura #{factura.id}', 'volver': 'lista_facturas'})
-    
+
+# ── DETALLE ORDEN (agregar/quitar platos) ─────
+@login_required
+def agregar_plato_orden(request, pk):
+    orden = get_object_or_404(Orden, pk=pk)
+    if request.method == 'POST':
+        plato = get_object_or_404(Plato, pk=request.POST['plato'])
+        cantidad = int(request.POST.get('cantidad', 1))
+        detalle_existente = orden.detalles.filter(plato=plato).first()
+        if detalle_existente:
+            detalle_existente.cantidad += cantidad
+            detalle_existente.save()
+        else:
+            DetalleOrden.objects.create(orden=orden, plato=plato, cantidad=cantidad)
+        messages.success(request, f'"{plato.nombre_plato}" agregado a la orden.')
+    return redirect('detalle_orden', pk=pk)
+
+@login_required
+def eliminar_plato_orden(request, orden_pk, detalle_pk):
+    detalle = get_object_or_404(DetalleOrden, pk=detalle_pk)
+    orden_pk = detalle.orden.pk
+    detalle.delete()
+    messages.success(request, 'Plato eliminado de la orden.')
+    return redirect('detalle_orden', pk=orden_pk)
