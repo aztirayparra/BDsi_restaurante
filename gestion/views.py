@@ -112,26 +112,55 @@ def crear_cliente(request):
         if not nombre:
             messages.error(request, 'El nombre es obligatorio.')
             return render(request, 'gestion/cliente_form.html', {'titulo': 'Nuevo Cliente'})
+        if not nombre.replace(' ', '').isalpha():
+            messages.error(request, 'El nombre solo puede contener letras.')
+            return render(request, 'gestion/cliente_form.html', {'titulo': 'Nuevo Cliente'})
         if telefono and not telefono.isdigit():
             messages.error(request, 'El teléfono solo puede contener números.')
+            return render(request, 'gestion/cliente_form.html', {'titulo': 'Nuevo Cliente'})
+        if telefono and len(telefono) < 7:
+            messages.error(request, 'El teléfono debe tener al menos 7 dígitos.')
+            return render(request, 'gestion/cliente_form.html', {'titulo': 'Nuevo Cliente'})
+        if correo and '@' not in correo:
+            messages.error(request, 'El correo no es válido.')
             return render(request, 'gestion/cliente_form.html', {'titulo': 'Nuevo Cliente'})
 
         Cliente.objects.create(nombre=nombre, telefono=telefono, correo=correo)
         messages.success(request, 'Cliente creado.')
         return redirect('lista_clientes')
     return render(request, 'gestion/cliente_form.html', {'titulo': 'Nuevo Cliente'})
+
 @login_required
 def editar_cliente(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
     if request.method == 'POST':
-        cliente.nombre = request.POST['nombre']
-        cliente.telefono = request.POST.get('telefono', '')
-        cliente.correo = request.POST.get('correo', '') or None
+        nombre = request.POST.get('nombre', '').strip()
+        telefono = request.POST.get('telefono', '').strip()
+        correo = request.POST.get('correo', '').strip() or None
+
+        if not nombre:
+            messages.error(request, 'El nombre es obligatorio.')
+            return render(request, 'gestion/cliente_form.html', {'titulo': 'Editar Cliente', 'obj': cliente})
+        if not nombre.replace(' ', '').isalpha():
+            messages.error(request, 'El nombre solo puede contener letras.')
+            return render(request, 'gestion/cliente_form.html', {'titulo': 'Editar Cliente', 'obj': cliente})
+        if telefono and not telefono.isdigit():
+            messages.error(request, 'El teléfono solo puede contener números.')
+            return render(request, 'gestion/cliente_form.html', {'titulo': 'Editar Cliente', 'obj': cliente})
+        if telefono and len(telefono) < 7:
+            messages.error(request, 'El teléfono debe tener al menos 7 dígitos.')
+            return render(request, 'gestion/cliente_form.html', {'titulo': 'Editar Cliente', 'obj': cliente})
+        if correo and '@' not in correo:
+            messages.error(request, 'El correo no es válido.')
+            return render(request, 'gestion/cliente_form.html', {'titulo': 'Editar Cliente', 'obj': cliente})
+
+        cliente.nombre = nombre
+        cliente.telefono = telefono
+        cliente.correo = correo
         cliente.save()
         messages.success(request, 'Cliente actualizado.')
         return redirect('lista_clientes')
     return render(request, 'gestion/cliente_form.html', {'titulo': 'Editar Cliente', 'obj': cliente})
-
 @login_required
 def eliminar_cliente(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
@@ -222,11 +251,29 @@ def detalle_empleado(request, pk):
 def crear_empleado(request):
     CARGOS = ['Mesero','Mesera','Cajero','Cajera','Administrador']
     if request.method == 'POST':
+        nombre = request.POST.get('nombre', '').strip()
+        telefono = request.POST.get('telefono', '').strip()
+        correo = request.POST.get('correo', '').strip() or None
+
+        if not nombre:
+            messages.error(request, 'El nombre es obligatorio.')
+            return render(request, 'gestion/empleado_form.html', {'titulo': 'Nuevo Empleado', 'cargos': CARGOS})
+        if not nombre.replace(' ', '').isalpha():
+            messages.error(request, 'El nombre solo puede contener letras.')
+            return render(request, 'gestion/empleado_form.html', {'titulo': 'Nuevo Empleado', 'cargos': CARGOS})
+        if telefono and not telefono.isdigit():
+            messages.error(request, 'El teléfono solo puede contener números.')
+            return render(request, 'gestion/empleado_form.html', {'titulo': 'Nuevo Empleado', 'cargos': CARGOS})
+        if telefono and len(telefono) < 7:
+            messages.error(request, 'El teléfono debe tener al menos 7 dígitos.')
+            return render(request, 'gestion/empleado_form.html', {'titulo': 'Nuevo Empleado', 'cargos': CARGOS})
+        if correo and '@' not in correo:
+            messages.error(request, 'El correo no es válido.')
+            return render(request, 'gestion/empleado_form.html', {'titulo': 'Nuevo Empleado', 'cargos': CARGOS})
+
         Empleado.objects.create(
-            nombre=request.POST['nombre'],
-            cargo=request.POST['cargo'],
-            telefono=request.POST.get('telefono', ''),
-            correo=request.POST.get('correo', '') or None,
+            nombre=nombre, cargo=request.POST['cargo'],
+            telefono=telefono, correo=correo,
         )
         messages.success(request, 'Empleado creado.')
         return redirect('lista_empleados')
@@ -237,16 +284,36 @@ def editar_empleado(request, pk):
     CARGOS = ['Mesero','Mesera','Cajero','Cajera','Administrador']
     empleado = get_object_or_404(Empleado, pk=pk)
     if request.method == 'POST':
-        empleado.nombre = request.POST['nombre']
+        nombre = request.POST.get('nombre', '').strip()
+        telefono = request.POST.get('telefono', '').strip()
+        correo = request.POST.get('correo', '').strip() or None
+
+        if not nombre:
+            messages.error(request, 'El nombre es obligatorio.')
+            return render(request, 'gestion/empleado_form.html', {'titulo': 'Editar Empleado', 'obj': empleado, 'cargos': CARGOS})
+        if not nombre.replace(' ', '').isalpha():
+            messages.error(request, 'El nombre solo puede contener letras.')
+            return render(request, 'gestion/empleado_form.html', {'titulo': 'Editar Empleado', 'obj': empleado, 'cargos': CARGOS})
+        if telefono and not telefono.isdigit():
+            messages.error(request, 'El teléfono solo puede contener números.')
+            return render(request, 'gestion/empleado_form.html', {'titulo': 'Editar Empleado', 'obj': empleado, 'cargos': CARGOS})
+        if telefono and len(telefono) < 7:
+            messages.error(request, 'El teléfono debe tener al menos 7 dígitos.')
+            return render(request, 'gestion/empleado_form.html', {'titulo': 'Editar Empleado', 'obj': empleado, 'cargos': CARGOS})
+        if correo and '@' not in correo:
+            messages.error(request, 'El correo no es válido.')
+            return render(request, 'gestion/empleado_form.html', {'titulo': 'Editar Empleado', 'obj': empleado, 'cargos': CARGOS})
+
+        empleado.nombre = nombre
         empleado.cargo = request.POST['cargo']
-        empleado.telefono = request.POST.get('telefono', '')
-        empleado.correo = request.POST.get('correo', '') or None
+        empleado.telefono = telefono
+        empleado.correo = correo
         empleado.save()
         messages.success(request, 'Empleado actualizado.')
         return redirect('lista_empleados')
     return render(request, 'gestion/empleado_form.html', {'titulo': 'Editar Empleado', 'obj': empleado, 'cargos': CARGOS})
-
 @login_required
+
 def eliminar_empleado(request, pk):
     empleado = get_object_or_404(Empleado, pk=pk)
     if request.method == 'POST':
@@ -399,7 +466,7 @@ def detalle_factura(request, pk):
 def crear_factura(request):
     METODOS = ['Efectivo', 'Tarjeta', 'Transferencia', 'Nequi', 'Daviplata']
     ordenes_disponibles = Orden.objects.filter(
-        estado_orden='Entregada'
+        estado_orden__in=['Activa', 'En preparación', 'Entregada']
     ).exclude(factura__isnull=False)
     if request.method == 'POST':
         orden = get_object_or_404(Orden, pk=request.POST['orden'])
@@ -449,8 +516,10 @@ def agregar_platos_orden(request, pk):
         if 'finalizar' in request.POST:
             if orden.detalles.count() == 0:
                 messages.error(request, 'Debes agregar al menos un plato.')
+            elif orden.total == 0:
+                messages.error(request, 'La orden no puede tener total de $0.')
             else:
-                messages.success(request, f'Orden #{orden.id} finalizada con {orden.detalles.count()} plato(s).')
+                messages.success(request, f'Orden #{orden.id} finalizada.')
                 return redirect('lista_ordenes')
         else:
             plato = get_object_or_404(Plato, pk=request.POST['plato'])
