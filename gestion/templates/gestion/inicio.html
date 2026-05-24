@@ -2,31 +2,40 @@
 
 {% block content %}
 <h2 class="page-title">📊 Panel Principal</h2>
+<p style="color:#666; margin-bottom:1.5rem;">Bienvenido, <strong>{{ request.user.get_full_name|default:request.user.username }}</strong> 
+— Rol: <strong>{{ request.user.groups.all.0.name|default:"Superusuario" }}</strong></p>
 
+{% if request.user.groups.all.0.name == 'Administrador' or request.user.is_superuser %}
 <div class="cards-grid">
-    <div class="card">
-        <h3>Clientes</h3>
-        <p>{{ total_cliente }}</p>
-    </div>
-    <div class="card">
-        <h3>Empleados</h3>
-        <p>{{ total_empleados }}</p>
-    </div>
-    <div class="card">
-        <h3>Mesas</h3>
-        <p>{{ total_mesas }}</p>
-    </div>
-    <div class="card">
-        <h3>Platos</h3>
-        <p>{{ total_platos }}</p>
-    </div>
-    <div class="card">
-        <h3>Órdenes</h3>
-        <p>{{ total_ordenes }}</p>
-    </div>
-    <div class="card">
-        <h3>Facturas</h3>
-        <p>{{ total_facturas }}</p>
-    </div>
+    <div class="card"><h3>Clientes</h3><p>{{ total_cliente }}</p></div>
+    <div class="card"><h3>Empleados</h3><p>{{ total_empleados }}</p></div>
+    <div class="card"><h3>Mesas</h3><p>{{ total_mesas }}</p></div>
+    <div class="card"><h3>Platos</h3><p>{{ total_platos }}</p></div>
+    <div class="card"><h3>Órdenes</h3><p>{{ total_ordenes }}</p></div>
+    <div class="card"><h3>Facturas</h3><p>{{ total_facturas }}</p></div>
 </div>
+
+{% elif request.user.groups.all.0.name == 'Mesero' %}
+<div class="cards-grid">
+    <div class="card"><h3>Mesas disponibles</h3><p>{{ total_mesas }}</p></div>
+    <div class="card"><h3>Órdenes activas</h3><p>{{ total_ordenes }}</p></div>
+    <div class="card"><h3>Clientes</h3><p>{{ total_cliente }}</p></div>
+    <div class="card"><h3>Platos en menú</h3><p>{{ total_platos }}</p></div>
+</div>
+<div style="margin-top:1.5rem; display:flex; gap:1rem;">
+    <a href="{% url 'crear_orden' %}" class="btn btn-primary">➕ Nueva orden</a>
+    <a href="{% url 'lista_mesas' %}" class="btn btn-secondary">🪑 Ver mesas</a>
+</div>
+
+{% elif request.user.groups.all.0.name == 'Cajero' %}
+<div class="cards-grid">
+    <div class="card"><h3>Órdenes pendientes</h3><p>{{ total_ordenes }}</p></div>
+    <div class="card"><h3>Facturas generadas</h3><p>{{ total_facturas }}</p></div>
+</div>
+<div style="margin-top:1.5rem; display:flex; gap:1rem;">
+    <a href="{% url 'lista_ordenes' %}" class="btn btn-primary">📋 Ver órdenes</a>
+    <a href="{% url 'lista_facturas' %}" class="btn btn-secondary">🧾 Ver facturas</a>
+</div>
+
+{% endif %}
 {% endblock %}

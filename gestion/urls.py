@@ -45,14 +45,14 @@ urlpatterns = [
     path('mesas/<int:pk>/eliminar/', views.eliminar_mesa, name='eliminar_mesa'),
 
   # CRUD Ordenes
-path('ordenes/', views.lista_ordenes, name='lista_ordenes'),
-path('ordenes/nueva/', views.crear_orden, name='crear_orden'),
-path('ordenes/<int:pk>/', views.detalle_orden, name='detalle_orden'),
-path('ordenes/<int:pk>/platos/', views.agregar_platos_orden, name='agregar_platos_orden'),
-path('ordenes/<int:pk>/editar/', views.editar_orden, name='editar_orden'),
-path('ordenes/<int:pk>/eliminar/', views.eliminar_orden, name='eliminar_orden'),
-path('ordenes/<int:pk>/facturar/', views.facturar_orden, name='facturar_orden'),
-path('ordenes/detalle/<int:detalle_pk>/eliminar/', views.eliminar_plato_orden, name='eliminar_plato_orden'),
+    path('ordenes/', views.lista_ordenes, name='lista_ordenes'),
+    path('ordenes/nueva/', views.crear_orden, name='crear_orden'),
+    path('ordenes/<int:pk>/', views.detalle_orden, name='detalle_orden'),
+    path('ordenes/<int:pk>/platos/', views.agregar_platos_orden, name='agregar_platos_orden'),
+    path('ordenes/<int:pk>/editar/', views.editar_orden, name='editar_orden'),
+    path('ordenes/<int:pk>/eliminar/', views.eliminar_orden, name='eliminar_orden'),
+    path('ordenes/<int:pk>/facturar/', views.facturar_orden, name='facturar_orden'),
+    path('ordenes/detalle/<int:detalle_pk>/eliminar/', views.eliminar_plato_orden, name='eliminar_plato_orden'),
 
     # CRUD Facturas
     path('facturas/', views.lista_facturas, name='lista_facturas'),
@@ -60,5 +60,10 @@ path('ordenes/detalle/<int:detalle_pk>/eliminar/', views.eliminar_plato_orden, n
     path('facturas/<int:pk>/', views.detalle_factura, name='detalle_factura'),
     path('facturas/<int:pk>/editar/', views.editar_factura, name='editar_factura'),
     path('facturas/<int:pk>/eliminar/', views.eliminar_factura, name='eliminar_factura'),
+
+ # Gestión usuarios
+    path('usuarios/', views.lista_usuarios, name='lista_usuarios'),
+    path('usuarios/<int:user_id>/rol/', views.cambiar_rol, name='cambiar_rol'),   
+    
     
 ]

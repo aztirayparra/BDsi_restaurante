@@ -1,0 +1,42 @@
+{% extends 'gestion/base.html' %}
+{% load static %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'gestion/css/crud.css' %}">{% endblock %}
+
+{% block content %}
+<h2 class="page-title">👥 Gestión de Usuarios</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Usuario</th>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Rol actual</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for usuario in usuarios %}
+        <tr>
+            <td>{{ usuario.username }}</td>
+            <td>{{ usuario.get_full_name|default:"—" }}</td>
+            <td>{{ usuario.email|default:"—" }}</td>
+            <td>
+                {% if usuario.is_superuser %}
+                    <span class="badge badge-category">Superusuario</span>
+                {% elif usuario.groups.first %}
+                    <span class="badge badge-available">{{ usuario.groups.first.name }}</span>
+                {% else %}
+                    <span class="badge badge-unavailable">Sin rol</span>
+                {% endif %}
+            </td>
+            <td>
+                {% if not usuario.is_superuser %}
+                <a href="{% url 'cambiar_rol' usuario.pk %}" class="btn btn-secondary btn-sm">🔑 Cambiar rol</a>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

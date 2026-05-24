@@ -1,5 +1,6 @@
 from decimal import Decimal
-
+from django.contrib.auth.models import Group
+from functools import wraps
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -7,7 +8,24 @@ from django.contrib.auth.forms import AuthenticationForm, UserCreationForm
 from django.contrib import messages
 from .models import Cliente, Empleado, Mesa, Plato, Orden, Factura,DetalleOrden
 
-
+# ── DECORADOR DE ROLES ────────────────────────
+def rol_requerido(*roles):
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            if not request.user.is_authenticated:
+                return redirect('login')
+            grupos = request.user.groups.values_list('name', flat=True)
+            if any(rol in grupos for rol in roles) or request.user.is_superuser:
+                return view_func(request, *args, **kwargs)
+            messages.error(request, 'No tienes permiso para acceder a esta sección.')
+            return redirect('inicio')
+        return wrapper
+    return decorator
+# ── CREAR GRUPOS AL INICIO ────────────────────
+def crear_grupos():
+    for rol in ['Administrador', 'Mesero', 'Cajero']:
+        Group.objects.get_or_create(name=rol)
 # ── AUTH ──────────────────────────────────────
 def login_view(request):
     if request.user.is_authenticated:
@@ -29,14 +47,15 @@ def registro_view(request):
     if request.method == 'POST':
         form = UserCreationForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Cuenta creada. Inicia sesión.')
+            user = form.save()
+            grupo, _ = Group.objects.get_or_create(name='Mesero')
+            user.groups.add(grupo)
+            messages.success(request, 'Cuenta creada como Mesero. Inicia sesión.')
             return redirect('login')
         messages.error(request, 'Corrige los errores.')
     else:
         form = UserCreationForm()
     return render(request, 'gestion/registro.html', {'form': form})
-
 
 def logout_view(request):
     logout(request)
@@ -102,7 +121,7 @@ def lista_facturas(request):
 
 
 # ── CRUD CLIENTES ─────────────────────────────
-@login_required
+@rol_requerido('Administrador', 'Mesero')
 def crear_cliente(request):
     if request.method == 'POST':
         nombre = request.POST.get('nombre', '').strip()
@@ -130,7 +149,7 @@ def crear_cliente(request):
         return redirect('lista_clientes')
     return render(request, 'gestion/cliente_form.html', {'titulo': 'Nuevo Cliente'})
 
-@login_required
+@rol_requerido('Administrador', 'Mesero')
 def editar_cliente(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
     if request.method == 'POST':
@@ -176,7 +195,7 @@ def detalle_cliente(request, pk):
     return render(request, 'gestion/cliente_detalle.html', {'cliente': cliente})
 
 # ── CRUD PLATOS ───────────────────────────────
-@login_required
+@rol_requerido('Administrador')
 def crear_plato(request):
     if request.method == 'POST':
         nombre = request.POST.get('nombre_plato', '').strip()
@@ -204,7 +223,7 @@ def crear_plato(request):
         return redirect('lista_platos')
     return render(request, 'gestion/plato_form.html', {'titulo': 'Nuevo Plato'})
 
-@login_required
+@rol_requerido('Administrador')
 def editar_plato(request, pk):
     plato = get_object_or_404(Plato, pk=pk)
     if request.method == 'POST':
@@ -218,7 +237,7 @@ def editar_plato(request, pk):
         return redirect('lista_platos')
     return render(request, 'gestion/plato_form.html', {'titulo': 'Editar Plato', 'obj': plato})
 
-@login_required
+@rol_requerido('Administrador')
 def eliminar_plato(request, pk):
     plato = get_object_or_404(Plato, pk=pk)
     if request.method == 'POST':
@@ -226,6 +245,7 @@ def eliminar_plato(request, pk):
         messages.success(request, 'Plato eliminado.')
         return redirect('lista_platos')
     return render(request, 'gestion/confirmar_eliminar.html', {'obj': plato, 'nombre': plato.nombre_plato, 'volver': 'lista_platos'})
+
 @login_required #proteger el login 
 def detalle_plato(request, pk):
     plato = get_object_or_404(Plato, pk=pk)
@@ -247,7 +267,7 @@ def detalle_empleado(request, pk):
     empleado = get_object_or_404(Empleado, pk=pk)
     return render(request, 'gestion/empleado_detalle.html', {'empleado': empleado})
 
-@login_required
+@rol_requerido('Administrador')
 def crear_empleado(request):
     CARGOS = ['Mesero','Mesera','Cajero','Cajera','Administrador']
     if request.method == 'POST':
@@ -279,7 +299,7 @@ def crear_empleado(request):
         return redirect('lista_empleados')
     return render(request, 'gestion/empleado_form.html', {'titulo': 'Nuevo Empleado', 'cargos': CARGOS})
 
-@login_required
+@rol_requerido('Administrador')
 def editar_empleado(request, pk):
     CARGOS = ['Mesero','Mesera','Cajero','Cajera','Administrador']
     empleado = get_object_or_404(Empleado, pk=pk)
@@ -312,8 +332,9 @@ def editar_empleado(request, pk):
         messages.success(request, 'Empleado actualizado.')
         return redirect('lista_empleados')
     return render(request, 'gestion/empleado_form.html', {'titulo': 'Editar Empleado', 'obj': empleado, 'cargos': CARGOS})
-@login_required
 
+
+@rol_requerido('Administrador')
 def eliminar_empleado(request, pk):
     empleado = get_object_or_404(Empleado, pk=pk)
     if request.method == 'POST':
@@ -335,7 +356,7 @@ def detalle_mesa(request, pk):
     mesa = get_object_or_404(Mesa, pk=pk)
     return render(request, 'gestion/mesa_detalle.html', {'mesa': mesa})
 
-@login_required
+@rol_requerido('Administrador')
 def crear_mesa(request):
     ESTADOS = ['Disponible', 'Ocupada', 'Reservada']
     if request.method == 'POST':
@@ -348,7 +369,7 @@ def crear_mesa(request):
         return redirect('lista_mesas')
     return render(request, 'gestion/mesa_form.html', {'titulo': 'Nueva Mesa', 'estados': ESTADOS})
 
-@login_required
+@rol_requerido('Administrador')
 def editar_mesa(request, pk):
     ESTADOS = ['Disponible', 'Ocupada', 'Reservada']
     mesa = get_object_or_404(Mesa, pk=pk)
@@ -361,7 +382,7 @@ def editar_mesa(request, pk):
         return redirect('lista_mesas')
     return render(request, 'gestion/mesa_form.html', {'titulo': 'Editar Mesa', 'obj': mesa, 'estados': ESTADOS})
 
-@login_required
+@rol_requerido('Administrador')
 def eliminar_mesa(request, pk):
     mesa = get_object_or_404(Mesa, pk=pk)
     if request.method == 'POST':
@@ -389,7 +410,8 @@ def detalle_orden(request, pk):
         'detalles': detalles,
         'platos': platos,
     })
-@login_required
+
+@rol_requerido('Administrador', 'Mesero')
 def crear_orden(request):
     if request.method == 'POST':
         mesa = get_object_or_404(Mesa, pk=request.POST['mesa'])
@@ -418,7 +440,7 @@ def crear_orden(request):
         'mesas': Mesa.objects.filter(estado_mesa='Disponible'),
     })
 
-@login_required
+@rol_requerido('Administrador', 'Mesero')
 def editar_orden(request, pk):
     ESTADOS = ['Activa', 'En preparación', 'Entregada', 'Facturada', 'Cancelada']
     orden = get_object_or_404(Orden, pk=pk)
@@ -439,7 +461,7 @@ def editar_orden(request, pk):
         'estados': ESTADOS,
     })
 
-@login_required
+@rol_requerido('Administrador')
 def eliminar_orden(request, pk):
     orden = get_object_or_404(Orden, pk=pk)
     if request.method == 'POST':
@@ -462,7 +484,7 @@ def detalle_factura(request, pk):
     factura = get_object_or_404(Factura, pk=pk)
     return render(request, 'gestion/factura_detalle.html', {'factura': factura})
 
-@login_required
+@rol_requerido('Administrador', 'Cajero')
 def crear_factura(request):
     METODOS = ['Efectivo', 'Tarjeta', 'Transferencia', 'Nequi', 'Daviplata']
     ordenes_disponibles = Orden.objects.filter(
@@ -497,18 +519,18 @@ def crear_factura(request):
         'ordenes': ordenes_disponibles,
         'metodos': METODOS,
     })
-@login_required
+@rol_requerido('Administrador')
 def editar_factura(request, pk):
     messages.error(request, 'Las facturas no pueden modificarse una vez creadas.')
     return redirect('lista_facturas')
 
-@login_required
+@rol_requerido('Administrador')
 def eliminar_factura(request, pk):
     messages.error(request, 'Las facturas no pueden eliminarse una vez creadas.')
     return redirect('lista_facturas')
 
 # ── DETALLE ORDEN (agregar/quitar platos) ─────
-@login_required
+@rol_requerido('Administrador', 'Mesero')
 def agregar_platos_orden(request, pk):
     orden = get_object_or_404(Orden, pk=pk)
     platos = Plato.objects.filter(disponible=True)
@@ -546,7 +568,7 @@ def eliminar_plato_orden(request, detalle_pk):
     messages.success(request, 'Plato eliminado.')
     return redirect('agregar_platos_orden', pk=orden_pk)
 
-@login_required
+@rol_requerido('Administrador', 'Cajero')
 def facturar_orden(request, pk):
     orden = get_object_or_404(Orden, pk=pk)
     METODOS = ['Efectivo', 'Tarjeta', 'Transferencia', 'Nequi', 'Daviplata']
@@ -576,4 +598,30 @@ def facturar_orden(request, pk):
     return render(request, 'gestion/facturar_orden.html', {
         'orden': orden,
         'metodos': METODOS,
+    })
+
+
+# ── GESTIÓN DE USUARIOS (solo Administrador) ──
+@rol_requerido('Administrador')
+def lista_usuarios(request):
+    from django.contrib.auth.models import User
+    usuarios = User.objects.prefetch_related('groups').all()
+    return render(request, 'gestion/usuarios.html', {'usuarios': usuarios})
+
+@rol_requerido('Administrador')
+def cambiar_rol(request, user_id):
+    from django.contrib.auth.models import User
+    usuario = get_object_or_404(User, pk=user_id)
+    ROLES = ['Administrador', 'Mesero', 'Cajero']
+    if request.method == 'POST':
+        rol = request.POST.get('rol')
+        usuario.groups.clear()
+        grupo, _ = Group.objects.get_or_create(name=rol)
+        usuario.groups.add(grupo)
+        messages.success(request, f'Rol de {usuario.username} actualizado a {rol}.')
+        return redirect('lista_usuarios')
+    return render(request, 'gestion/cambiar_rol.html', {
+        'usuario': usuario,
+        'roles': ROLES,
+        'rol_actual': usuario.groups.first().name if usuario.groups.exists() else 'Sin rol'
     })

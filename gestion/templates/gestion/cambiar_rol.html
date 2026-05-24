@@ -1,0 +1,35 @@
+{% extends 'gestion/base.html' %}
+{% load static %}
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'gestion/css/crud.css' %}">
+<link rel="stylesheet" href="{% static 'gestion/css/auth.css' %}">
+{% endblock %}
+
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center;">
+    <h2 class="page-title">🔑 Cambiar rol de {{ usuario.username }}</h2>
+    <a href="{% url 'lista_usuarios' %}" class="btn btn-secondary">← Volver</a>
+</div>
+
+<div class="form-wrapper">
+    <div style="background:#f9f9f9; border-radius:8px; padding:1rem; margin-bottom:1.5rem;">
+        <p>Usuario: <strong>{{ usuario.username }}</strong></p>
+        <p>Rol actual: <strong>{{ rol_actual }}</strong></p>
+    </div>
+    <form method="post" novalidate>
+        {% csrf_token %}
+        <div class="form-group">
+            <label>Nuevo rol *</label>
+            <select name="rol" style="width:100%; padding:9px 12px; border:1px solid #ddd; border-radius:6px;">
+                {% for rol in roles %}
+                <option value="{{ rol }}" {% if rol == rol_actual %}selected{% endif %}>{{ rol }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">💾 Guardar</button>
+            <a href="{% url 'lista_usuarios' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
