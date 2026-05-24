@@ -41,11 +41,9 @@
             <td><strong>${{ factura.total_factura }}</strong></td>
             <td>{{ factura.metodo_pago }}</td>
             <td>
-                <div class="acciones">
-                    <a href="{% url 'detalle_factura' factura.pk %}" class="btn btn-primary btn-sm">👁️ Ver</a>
-                    <a href="{% url 'editar_factura' factura.pk %}" class="btn btn-secondary btn-sm">✏️ Editar</a>
-                    <a href="{% url 'eliminar_factura' factura.pk %}" class="btn btn-danger btn-sm">🗑️ Eliminar</a>
-                </div>
+                 <div class="acciones">
+                           <a href="{% url 'detalle_factura' factura.pk %}" class="btn btn-primary btn-sm">👁️ Ver</a>
+                 </div>
             </td>
         </tr>
         {% empty %}

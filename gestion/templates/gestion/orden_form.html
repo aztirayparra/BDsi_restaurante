@@ -38,12 +38,13 @@
                 {% endfor %}
             </select>
         </div>
-        <div class="form-group">
+       <div class="form-group">
             <label>Estado *</label>
             <select name="estado_orden">
-                {% for estado in estados %}
-                <option value="{{ estado }}" {% if obj.estado_orden == estado %}selected{% endif %}>{{ estado }}</option>
-                {% endfor %}
+                <option value="Activa" {% if obj.estado_orden == 'Activa' %}selected{% endif %}>Activa</option>
+                <option value="En preparación" {% if obj.estado_orden == 'En preparación' %}selected{% endif %}>En preparación</option>
+                <option value="Entregada" {% if obj.estado_orden == 'Entregada' %}selected{% endif %}>Entregada</option>
+                <option value="Cancelada" {% if obj.estado_orden == 'Cancelada' %}selected{% endif %}>Cancelada</option>
             </select>
         </div>
         <div class="form-actions">

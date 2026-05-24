@@ -32,9 +32,11 @@
         <div class="form-group">
             <label>Método de pago *</label>
             <select name="metodo_pago">
-                {% for metodo in metodos %}
-                <option value="{{ metodo }}" {% if obj.metodo_pago == metodo %}selected{% endif %}>{{ metodo }}</option>
-                {% endfor %}
+                <option value="Efectivo">Efectivo</option>
+                <option value="Tarjeta">Tarjeta</option>
+                <option value="Transferencia">Transferencia</option>
+                <option value="Nequi">Nequi</option>
+                <option value="Daviplata">Daviplata</option>
             </select>
         </div>
         <div class="form-actions">

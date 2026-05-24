@@ -105,15 +105,21 @@ def lista_facturas(request):
 @login_required
 def crear_cliente(request):
     if request.method == 'POST':
-        Cliente.objects.create(
-            nombre=request.POST['nombre'],
-            telefono=request.POST.get('telefono', ''),
-            correo=request.POST.get('correo', '') or None,
-        )
+        nombre = request.POST.get('nombre', '').strip()
+        telefono = request.POST.get('telefono', '').strip()
+        correo = request.POST.get('correo', '').strip() or None
+
+        if not nombre:
+            messages.error(request, 'El nombre es obligatorio.')
+            return render(request, 'gestion/cliente_form.html', {'titulo': 'Nuevo Cliente'})
+        if telefono and not telefono.isdigit():
+            messages.error(request, 'El teléfono solo puede contener números.')
+            return render(request, 'gestion/cliente_form.html', {'titulo': 'Nuevo Cliente'})
+
+        Cliente.objects.create(nombre=nombre, telefono=telefono, correo=correo)
         messages.success(request, 'Cliente creado.')
         return redirect('lista_clientes')
     return render(request, 'gestion/cliente_form.html', {'titulo': 'Nuevo Cliente'})
-
 @login_required
 def editar_cliente(request, pk):
     cliente = get_object_or_404(Cliente, pk=pk)
@@ -144,16 +150,31 @@ def detalle_cliente(request, pk):
 @login_required
 def crear_plato(request):
     if request.method == 'POST':
+        nombre = request.POST.get('nombre_plato', '').strip()
+        precio = request.POST.get('precio', '').strip()
+
+        if not nombre:
+            messages.error(request, 'El nombre del plato es obligatorio.')
+            return render(request, 'gestion/plato_form.html', {'titulo': 'Nuevo Plato'})
+        try:
+            precio = Decimal(precio)
+            if precio <= 0:
+                raise ValueError
+        except:
+            messages.error(request, 'El precio debe ser un número mayor a 0.')
+            return render(request, 'gestion/plato_form.html', {'titulo': 'Nuevo Plato'})
+
         Plato.objects.create(
-            nombre_plato=request.POST['nombre_plato'],
+            nombre_plato=nombre,
             descripcion=request.POST.get('descripcion', ''),
-            precio=request.POST['precio'],
+            precio=precio,
             categoria=request.POST.get('categoria', ''),
             disponible='disponible' in request.POST,
         )
         messages.success(request, 'Plato creado.')
         return redirect('lista_platos')
     return render(request, 'gestion/plato_form.html', {'titulo': 'Nuevo Plato'})
+
 @login_required
 def editar_plato(request, pk):
     plato = get_object_or_404(Plato, pk=pk)
@@ -303,22 +324,31 @@ def detalle_orden(request, pk):
     })
 @login_required
 def crear_orden(request):
-    ESTADOS = ['Activa', 'En preparación', 'Entregada', 'Facturada', 'Cancelada']
     if request.method == 'POST':
+        mesa = get_object_or_404(Mesa, pk=request.POST['mesa'])
+        if mesa.estado_mesa == 'Ocupada':
+            messages.error(request, f'La Mesa {mesa.numero_mesa} está ocupada. Elige otra.')
+            return render(request, 'gestion/orden_form.html', {
+                'titulo': 'Nueva Orden',
+                'clientes': Cliente.objects.all(),
+                'empleados': Empleado.objects.all(),
+                'mesas': Mesa.objects.all(),
+            })
         orden = Orden.objects.create(
             cliente=get_object_or_404(Cliente, pk=request.POST['cliente']),
             empleado=get_object_or_404(Empleado, pk=request.POST['empleado']),
-            mesa=get_object_or_404(Mesa, pk=request.POST['mesa']),
+            mesa=mesa,
             estado_orden='Activa',
         )
+        mesa.estado_mesa = 'Ocupada'
+        mesa.save()
         messages.success(request, 'Orden creada. Ahora agrega los platos.')
         return redirect('agregar_platos_orden', pk=orden.pk)
     return render(request, 'gestion/orden_form.html', {
         'titulo': 'Nueva Orden',
         'clientes': Cliente.objects.all(),
         'empleados': Empleado.objects.all(),
-        'mesas': Mesa.objects.all(),
-        'estados': ESTADOS,
+        'mesas': Mesa.objects.filter(estado_mesa='Disponible'),
     })
 
 @login_required
@@ -368,9 +398,17 @@ def detalle_factura(request, pk):
 @login_required
 def crear_factura(request):
     METODOS = ['Efectivo', 'Tarjeta', 'Transferencia', 'Nequi', 'Daviplata']
-    ordenes_disponibles = Orden.objects.filter(estado_orden='Entregada').exclude(factura__isnull=False)
+    ordenes_disponibles = Orden.objects.filter(
+        estado_orden='Entregada'
+    ).exclude(factura__isnull=False)
     if request.method == 'POST':
         orden = get_object_or_404(Orden, pk=request.POST['orden'])
+        if orden.estado_orden == 'Facturada':
+            messages.error(request, 'Esta orden ya fue facturada.')
+            return redirect('lista_facturas')
+        if orden.detalles.count() == 0:
+            messages.error(request, 'La orden no tiene platos.')
+            return redirect('crear_factura')
         subtotal = orden.total
         impuesto = round(subtotal * Decimal('0.08'), 2)
         total_factura = subtotal + impuesto
@@ -382,6 +420,8 @@ def crear_factura(request):
             metodo_pago=request.POST['metodo_pago'],
         )
         orden.estado_orden = 'Facturada'
+        orden.mesa.estado_mesa = 'Disponible'
+        orden.mesa.save()
         orden.save()
         messages.success(request, 'Factura creada.')
         return redirect('lista_facturas')
@@ -390,30 +430,15 @@ def crear_factura(request):
         'ordenes': ordenes_disponibles,
         'metodos': METODOS,
     })
-
 @login_required
 def editar_factura(request, pk):
-    METODOS = ['Efectivo', 'Tarjeta', 'Transferencia', 'Nequi', 'Daviplata']
-    factura = get_object_or_404(Factura, pk=pk)
-    if request.method == 'POST':
-        factura.metodo_pago = request.POST['metodo_pago']
-        factura.save()
-        messages.success(request, 'Factura actualizada.')
-        return redirect('lista_facturas')
-    return render(request, 'gestion/factura_form.html', {
-        'titulo': 'Editar Factura',
-        'obj': factura,
-        'metodos': METODOS,
-    })
+    messages.error(request, 'Las facturas no pueden modificarse una vez creadas.')
+    return redirect('lista_facturas')
 
 @login_required
 def eliminar_factura(request, pk):
-    factura = get_object_or_404(Factura, pk=pk)
-    if request.method == 'POST':
-        factura.delete()
-        messages.success(request, 'Factura eliminada.')
-        return redirect('lista_facturas')
-    return render(request, 'gestion/confirmar_eliminar.html', {'nombre': f'Factura #{factura.id}', 'volver': 'lista_facturas'})
+    messages.error(request, 'Las facturas no pueden eliminarse una vez creadas.')
+    return redirect('lista_facturas')
 
 # ── DETALLE ORDEN (agregar/quitar platos) ─────
 @login_required
@@ -474,6 +499,8 @@ def facturar_orden(request, pk):
             metodo_pago=request.POST['metodo_pago'],
         )
         orden.estado_orden = 'Facturada'
+        orden.mesa.estado_mesa = 'Disponible'
+        orden.mesa.save()
         orden.save()
         messages.success(request, f'Orden #{orden.id} facturada exitosamente.')
         return redirect('lista_facturas')
